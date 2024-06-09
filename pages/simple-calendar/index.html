@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple-Calendar</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Train+One&display=swap");
+
+      .main {
+        margin-top: 20px;
+        margin: auto;
+        width: auto;
+      }
+
+      .h2 {
+        font-family: "Train One", system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      .form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 10px;
+      }
+
+      .form > input,
+      select {
+        max-width: 160px;
+        text-align: center;
+        font-size: medium;
+        max-height: min-content;
+        padding: 7px;
+        border: none;
+        background-color: var(--bg);
+        border-bottom: 0.5px solid var(--text);
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+      }
+      input[type="number"]::-webkit-inner-spin-button {
+        opacity: 1;
+      }
+      .form > small {
+        margin-top: 10px;
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+      }
+      #clock {
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+        color: var(--active);
+      }
+
+      .cal {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        padding: 20px;
+        border-radius: 10px;
+        gap: 20px;
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+      }
+      .day {
+        border: 1px solid gold;
+        text-align: center;
+        border-radius: 7px;
+        padding: 10px;
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+      }
+      .sunday {
+        color: red;
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+        border: 1px solid gold;
+      }
+      .active {
+        color: whitesmoke;
+        background-color: green;
+        font-weight: bolder;
+        font-size: larger;
+        font-family: "Orbitron", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: bold;
+        font-style: normal;
+        border: 1px solid gold;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <main class="main">
+      <h2 class="h2">Calendar</h2>
+      <div class="container">
+        <form class="form"></form>
+        <div id="calendar"></div>
+      </div>
+    </main>
+    <script>
+      const calander = document.querySelector("#calendar");
+      const form = document.querySelector("form");
+      const today = new Date();
+      const yearNow = today.getFullYear();
+      const monthNow = today.getMonth();
+      const dateNow = today.getDate();
+      // ================================ //
+      let aftmn = []; // after mont now
+      let bfmn = [];
+      for (let i = monthNow; i <= 11; i++) {
+        aftmn.push(i);
+      }
+      if (monthNow !== 0) {
+        for (let i = monthNow - 1; i >= 0; i--) {
+          bfmn.push(i);
+        }
+      }
+      const monthArray = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const selectValue = [...aftmn, ...bfmn];
+
+      setInterval(() => {
+        var dt = new Date();
+        var dat = dt.toLocaleTimeString();
+        document.getElementById("clock").innerHTML = dat;
+      }, 1000);
+      // ============================================= //
+
+      form.innerHTML = `
+        <!-- hello -->
+        <input type="number" name="year" id="year" value=${yearNow} />
+        <select name="month" id="month">
+        ${selectValue.map((i) => {
+        return `
+            <option value=${i}>${monthArray[i]}</option>
+            `;
+        })}
+                    
+        </select>
+        <small id="date"></small>
+        <small id="clock"></small>
+
+
+        `;
+      // =========================================================================== //
+
+      document.getElementById("date").innerHTML = today.toLocaleString(
+        "en-US",
+        {
+          month: "long",
+          day: "2-digit",
+          weekday: "short",
+        }
+      );
+
+      // CALENDAR BODY >>>> START <<<<<
+
+      const yearEl = form.elements.namedItem("year");
+      const monthEl = form.elements.namedItem("month");
+      // checking for leap year
+      const isLeapYear = (year) => {
+        if (year % 4 !== 0) {
+          return false;
+        } else if (year % 100 !== 0) {
+          return true;
+        } else if (year % 400 !== 0) {
+          return false;
+        } else {
+          return true;
+        }
+      };
+      // call change event
+      form.addEventListener("change", () => {
+        handler();
+      });
+      //handler for on load and change events for calendar body
+      function handler() {
+        const yearValue = yearEl.value;
+        const monthValue = monthEl.value;
+        const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        if (isLeapYear(yearValue)) {
+          daysInMonths[1] = 29;
+        }
+
+        const dim = daysInMonths[monthValue];
+        const dateArray = [];
+        for (let i = 0; i < dim; i++) {
+          const wdid = new Date(yearValue, monthValue, i + 1).getDay();
+          const da = {
+            date: i + 1,
+            wd_id: wdid,
+          };
+          dateArray.push(da);
+        }
+        const fwdId = dateArray[0].wd_id;
+        const weekDaysIds = dateArray.map((i) => i.wd_id);
+        const wkda = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        calander.innerHTML = "";
+        const grid = document.createElement("div");
+        grid.classList.add("cal");
+        calander.appendChild(grid);
+
+        for (let i = 0; i < 7; i++) {
+          const dwek = document.createElement("div");
+          dwek.classList.add("day");
+          if (i === 0) {
+            dwek.classList.add("sunday");
+          }
+          dwek.textContent = wkda[i];
+          grid.appendChild(dwek);
+        }
+
+        const blanks = (fwdId + 7) % 7;
+
+        for (let i = 0; i < blanks; i++) {
+          const blank = document.createElement("div");
+          blank.classList.add("day");
+          grid.appendChild(blank);
+        }
+
+        for (let i = 1; i <= dim; i++) {
+          const dc = document.createElement("div");
+          dc.classList.add("day");
+          if (weekDaysIds[i - 1] === 0) {
+            dc.classList.add("sunday");
+          }
+          const a = new Date(yearNow, monthNow, dateNow).getTime();
+          const b = new Date(yearValue, monthValue, i).getTime();
+          if (a === b && dateNow === i) {
+            dc.classList.add("active");
+          }
+          dc.textContent = i;
+          grid.appendChild(dc);
+        }
+
+        const e = blanks + dim;
+        const getExtraBlanks = e <= 35 ? 35 - e : 42 - e;
+        for (let i = 0; i < getExtraBlanks; i++) {
+          const ext = document.createElement("div");
+          ext.classList.add("day");
+          grid.appendChild(ext);
+        }
+      }
+      handler(); // Call handler
+    </script>
+  </body>
+</html>
